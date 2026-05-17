@@ -12,10 +12,14 @@ type RenderCreature = {
   config: CreatureConfig;
   state: CreatureState;
   statusLabel: string;
+  needsUserAction: boolean;
   x: number;
   y: number;
   vx: number;
   vy: number;
+  wanderPhase: number;
+  wanderRate: number;
+  baseSpeed: number;
 };
 
 type Rect = {
@@ -106,28 +110,41 @@ export class TerminalGarden {
       if (existing) {
         existing.state = repo.state;
         existing.statusLabel = repo.statusLabel;
+        existing.needsUserAction = repo.needsUserAction;
         return;
       }
 
       const config = generateCreature(repo.repoPath, identities.get(repo.repoPath));
       const lane = index % 3;
+      const baseSpeed = 0.052 + (config.motion + 1) * 0.012;
       this.creatures.set(repo.repoPath, {
         config,
         state: repo.state,
         statusLabel: repo.statusLabel,
+        needsUserAction: repo.needsUserAction,
         ...this.initialPosition(index, config, width, height),
-        vx: 0.018 + (config.gait + 1) * 0.006,
-        vy: lane === 1 ? -0.012 : 0.01,
+        vx: baseSpeed * (lane === 2 ? -1 : 1),
+        vy: lane === 1 ? -baseSpeed * 0.45 : baseSpeed * 0.32,
+        wanderPhase: (config.seed % 360) * (Math.PI / 180),
+        wanderRate: 0.026 + (config.motion + 1) * 0.006,
+        baseSpeed,
       });
     });
   }
 
   private step(width: number, height: number): void {
+    const queueSlots = queuedCreatures(this.creatures);
     for (const c of this.creatures.values()) {
-      const speedBoost = c.state === 'attention' ? 1.35 : c.state === 'sleeping' ? 0.1 : 1;
-      c.x += c.vx * speedBoost;
-      c.y += c.vy * speedBoost;
-      if (c.state === 'attention') c.y -= Math.sin(this.frame / 8) * 0.025;
+      const queueIndex = queueSlots.indexOf(c);
+      if (queueIndex >= 0) {
+        this.moveTowardQueue(c, queueIndex, width, height);
+      } else {
+        if (c.state === 'awake') this.wander(c);
+        const speedBoost = c.state === 'attention' ? 1.25 : c.state === 'sleeping' ? 0.08 : 1.45;
+        c.x += c.vx * speedBoost;
+        c.y += c.vy * speedBoost;
+        if (c.state === 'attention') c.y -= Math.sin(this.frame / 8) * 0.025;
+      }
 
       const bounds = creatureBounds(c, width);
       if (bounds.left < 3 || bounds.right > width - 3) {
@@ -141,6 +158,25 @@ export class TerminalGarden {
     }
 
     this.resolveCollisions(width, height);
+  }
+
+  private moveTowardQueue(creature: RenderCreature, queueIndex: number, width: number, height: number): void {
+    const target = queueTarget(creature, queueIndex, width, height);
+    const dx = target.x - creature.x;
+    const dy = target.y - creature.y;
+    creature.vx = creature.vx * 0.55 + dx * 0.045;
+    creature.vy = creature.vy * 0.55 + dy * 0.045;
+    creature.x += creature.vx;
+    creature.y += creature.vy;
+  }
+
+  private wander(creature: RenderCreature): void {
+    const phase = this.frame * creature.wanderRate + creature.wanderPhase;
+    const desiredAngle = phase + Math.sin(phase * 0.61) * 1.35 + Math.sin(phase * 0.23) * 0.8;
+    const desiredVx = Math.cos(desiredAngle) * creature.baseSpeed;
+    const desiredVy = Math.sin(desiredAngle) * creature.baseSpeed * 0.9;
+    creature.vx = creature.vx * 0.9 + desiredVx * 0.1;
+    creature.vy = creature.vy * 0.86 + desiredVy * 0.14;
   }
 
   private initialPosition(index: number, config: CreatureConfig, width: number, height: number): { x: number; y: number } {
@@ -169,28 +205,29 @@ export class TerminalGarden {
 
           const overlapX = Math.min(ar.right - br.left, br.right - ar.left);
           const overlapY = Math.min(ar.bottom - br.top, br.bottom - ar.top);
+          const [aShare, bShare] = collisionPushShares(a, b);
           if (overlapX < overlapY) {
-            const push = overlapX / 2 + 1;
+            const push = overlapX + 1;
             if (a.x <= b.x) {
-              a.x -= push;
-              b.x += push;
+              a.x -= push * aShare;
+              b.x += push * bShare;
             } else {
-              a.x += push;
-              b.x -= push;
+              a.x += push * aShare;
+              b.x -= push * bShare;
             }
-            a.vx *= -0.8;
-            b.vx *= -0.8;
+            a.vx *= a.state === 'sleeping' ? -0.35 : -0.75;
+            b.vx *= b.state === 'sleeping' ? -0.35 : -0.75;
           } else {
-            const push = overlapY / 2 + 1;
+            const push = overlapY + 1;
             if (a.y <= b.y) {
-              a.y -= push;
-              b.y += push;
+              a.y -= push * aShare;
+              b.y += push * bShare;
             } else {
-              a.y += push;
-              b.y -= push;
+              a.y += push * aShare;
+              b.y -= push * bShare;
             }
-            a.vy *= -0.8;
-            b.vy *= -0.8;
+            a.vy *= a.state === 'sleeping' ? -0.35 : -0.75;
+            b.vy *= b.state === 'sleeping' ? -0.35 : -0.75;
           }
         }
       }
@@ -317,6 +354,36 @@ function creatureBounds(creature: RenderCreature, width: number): Rect {
 
 function overlaps(a: Rect, b: Rect): boolean {
   return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
+function queuedCreatures(creatures: Map<string, RenderCreature>): RenderCreature[] {
+  return [...creatures.values()]
+    .filter((creature) => creature.needsUserAction)
+    .sort((a, b) => a.config.repoPath.localeCompare(b.config.repoPath));
+}
+
+function queueTarget(creature: RenderCreature, queueIndex: number, width: number, height: number): { x: number; y: number } {
+  const reservedWidth = Math.max(creature.config.width, labelText(creature).length + 2);
+  const x = width - reservedWidth - 5;
+  const y = height - creature.config.height - 5 - queueIndex * (creature.config.height + 2);
+  return {
+    x: clamp(x, 3, width - reservedWidth - 3),
+    y: clamp(y, 3, height - creature.config.height - 5),
+  };
+}
+
+function collisionPushShares(a: RenderCreature, b: RenderCreature): [number, number] {
+  const aWeight = collisionWeight(a);
+  const bWeight = collisionWeight(b);
+  const total = aWeight + bWeight;
+  return [bWeight / total, aWeight / total];
+}
+
+function collisionWeight(creature: RenderCreature): number {
+  if (creature.needsUserAction) return 2;
+  if (creature.state === 'sleeping') return 0.35;
+  if (creature.state === 'attention') return 1.35;
+  return 1.2;
 }
 
 function boundsWidth(rect: Rect): number {

@@ -56,5 +56,6 @@ export type RepoCreature = {
   repoPath: string;
   state: CreatureState;
   statusLabel: string;
+  needsUserAction: boolean;
   sessions: SessionRow[];
 };

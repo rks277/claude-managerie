@@ -177,7 +177,7 @@ repo looks the same across runs.
 
 ```sh
 npm run dev         # build + run the TUI
-npm run lab         # render every creature archetype side-by-side
+npm run lab         # render each repo's creature species side-by-side
 npm run lab /abs/path/to/repo-a /abs/path/to/repo-b   # specific repos
 
 npm run typecheck   # tsc --noEmit
@@ -186,7 +186,7 @@ npm run build       # emit dist/
 ```
 
 The creature lab is the fastest way to iterate on sprite art and
-palettes — it skips the daemon entirely and renders archetypes straight
+palettes — it skips the daemon entirely and renders species straight
 to stdout.
 
 ### Project layout
@@ -200,7 +200,7 @@ src/
     renderer.ts           # TerminalGarden: grid, physics, sprite placement
     ansi.ts               # 256-color palette + escape sequences
   creatures/
-    generator.ts          # archetypes, variant/mark/palette mixing
+    generator.ts          # species, detail/mark/palette mixing
     generator.test.ts     # determinism + identity tests
   repo-orch/
     paths.ts              # resolves ~/.repo-orch, ~/.claude/plugins, ../agent-terrarium

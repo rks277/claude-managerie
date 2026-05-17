@@ -70,6 +70,7 @@ export class SessionStore {
           repoPath,
           state: aggregateCreatureState(sessions),
           statusLabel: creatureStatusLabel(sessions),
+          needsUserAction: needsUserAction(sessions),
           sessions,
         };
       });
@@ -96,6 +97,11 @@ export function creatureStatusLabel(rows: SessionRow[]): string {
   if (liveRows.some((row) => row.state === 'awaiting_input')) return 'awaiting instructions';
   if (liveRows.some((row) => row.state === 'running')) return 'working, dnd';
   return 'sleeping';
+}
+
+export function needsUserAction(rows: SessionRow[]): boolean {
+  const liveRows = rows.filter(isLiveSession);
+  return liveRows.some((row) => row.state === 'awaiting_input' || row.state === 'awaiting_permission');
 }
 
 export function isLiveSession(row: SessionRow): boolean {

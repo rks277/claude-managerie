@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aggregateCreatureState, creatureStatusLabel } from './session-store.js';
+import { aggregateCreatureState, creatureStatusLabel, needsUserAction } from './session-store.js';
 import type { SessionRow } from '../types.js';
 
 const base: SessionRow = {
@@ -76,5 +76,17 @@ describe('creatureStatusLabel', () => {
         { ...base, sessionId: 's2', state: 'running', pid: process.pid },
       ]),
     ).toBe('awaiting instructions');
+  });
+});
+
+describe('needsUserAction', () => {
+  it('queues repos waiting on input or permissions', () => {
+    expect(needsUserAction([{ ...base, state: 'awaiting_input', pid: process.pid }])).toBe(true);
+    expect(needsUserAction([{ ...base, state: 'awaiting_permission', pid: process.pid }])).toBe(true);
+  });
+
+  it('does not queue running or sleeping repos', () => {
+    expect(needsUserAction([{ ...base, state: 'running', pid: process.pid }])).toBe(false);
+    expect(needsUserAction([{ ...base, state: 'ended' }])).toBe(false);
   });
 });

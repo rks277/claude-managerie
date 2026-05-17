@@ -1,6 +1,10 @@
 import { ansi } from './ansi.js';
 import { TerminalGarden, type RenderModel } from './renderer.js';
-import { createCreatureIdentity, type CreatureIdentity } from '../creatures/generator.js';
+import {
+  createCreatureIdentity,
+  isCurrentCreatureIdentity,
+  type CreatureIdentity,
+} from '../creatures/generator.js';
 import { getSetupStatus } from '../repo-orch/install.js';
 import { runSetup } from '../cli/setup.js';
 import { resolveRepoOrchPaths } from '../repo-orch/paths.js';
@@ -191,11 +195,14 @@ export class ManagerieApp {
   private async ensureCreatureIdentities(repoPaths: string[]): Promise<void> {
     let changed = false;
     const used = new Set(
-      Object.entries(this.config.creatureIdentities).map(([, identity]) => identitySignature(identity)),
+      Object.entries(this.config.creatureIdentities)
+        .filter(([, identity]) => isCurrentCreatureIdentity(identity))
+        .map(([, identity]) => identitySignature(identity)),
     );
 
     for (const repoPath of repoPaths) {
-      if (this.config.creatureIdentities[repoPath]) continue;
+      const existing = this.config.creatureIdentities[repoPath];
+      if (isCurrentCreatureIdentity(existing)) continue;
 
       let identity = createCreatureIdentity(repoPath);
       let salt = 1;
@@ -220,10 +227,10 @@ function shortRepo(repoPath: string): string {
 
 function identitySignature(identity: CreatureIdentity): string {
   return [
-    identity.body,
+    identity.species,
     identity.palette,
-    identity.variant % 4,
+    identity.detail,
     identity.mark,
-    identity.gait,
+    identity.motion,
   ].join(':');
 }

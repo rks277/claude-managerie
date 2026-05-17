@@ -23,7 +23,7 @@ for (const repo of repos) {
   const color = paletteColor(config.palette);
   process.stdout.write(`${ansi.fg.bone}${ansi.bold}${repo}${ansi.reset}\n`);
   process.stdout.write(
-    `${ansi.fg.gray}${creatureArchetypeName(config)} | body=${config.body} variant=${config.variant} palette=${config.palette} gait=${config.gait}${ansi.reset}\n`,
+    `${ansi.fg.gray}${creatureArchetypeName(config)} | species=${config.species} detail=${config.detail} palette=${config.palette} motion=${config.motion}${ansi.reset}\n`,
   );
 
   const framesByState = states.map((state) => ({

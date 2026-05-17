@@ -40,43 +40,49 @@ const COLOR = {
 const palette = [COLOR.fgBone, COLOR.fgGreen, COLOR.fgCyan, COLOR.fgRust, COLOR.fgViolet, COLOR.fgBlue];
 const paletteColor = (i) => palette[((i % palette.length) + palette.length) % palette.length];
 
-// Sprite archetypes, mirrored from src/creatures/generator.ts.
-const archetypes = [
+// Sprite species, mirrored from src/creatures/generator.ts.
+const species = [
   {
-    name: 'block buddy', width: 14, height: 5,
-    awake: ['              ', '  ████████    ', '▄██  ██  ██▄ ', '███████████  ', '  ▀ ▀  ▀ ▀   '],
-    sleeping: [' zZ           ', '  ████████    ', '▄██ ██ ██▄   ', '██████████   ', '  ▀ ▀  ▀ ▀   '],
-    attention: ['  !!!         ', ' ▄████████▄   ', '███  ██  ███ ', '██████!████  ', '  ▀ ▀  ▀ ▀   '],
+    name: 'ember fox', width: 17, height: 6,
+    awake: [' /\\        /\\    ', '(  )██████(  )   ', ' \\/██o██o██\\/    ', '  ████vv████\\~~  ', '  ██████████     ', '   /_/  \\_\\      '],
+    sleeping: [' zZ              ', ' /\\        /\\    ', '(  )██████(  )   ', ' \\/██-██-██\\/    ', '  ████████\\~~    ', '   /_/  \\_\\      '],
+    attention: ['  !!!            ', '/\\          /\\   ', '(  )██████(  )   ', ' \\/██O!!O██\\/    ', '  ██████████\\~~  ', '   /_/  \\_\\      '],
   },
   {
-    name: 'wide buddy', width: 16, height: 5,
-    awake: ['                ', '  ████████████  ', '▄███  ██  ██  ▄', '██████████████ ', '   ▀ ▀  ▀ ▀    '],
-    sleeping: [' zZ             ', '  ████████████  ', '▄███ ██  ██ ███▄', '███████████████ ', '   ▀ ▀  ▀ ▀     '],
-    attention: ['  !!!           ', ' ▄████████████▄ ', '▄███  ██  ██  ▄', '███████!!█████ ', '   ▀ ▀  ▀ ▀    '],
+    name: 'moon owl', width: 15, height: 7,
+    awake: ['               ', '   /\\___/\\     ', '  /███████\\    ', ' (██o██o██)    ', '/███\\_v_/██\\   ', '   ███████     ', '   ^^   ^^     '],
+    sleeping: [' zZ            ', '   /\\___/\\     ', '  /███████\\    ', ' (██-██-██)    ', '/███\\___/██\\   ', '   ███████     ', '   ^^   ^^     '],
+    attention: ['  !!!          ', ' \\/\\___/\\/     ', '  /███████\\    ', ' (██O!!O██)    ', '/███\\_!_/██\\   ', '   ███████     ', '   ^^   ^^     '],
   },
   {
-    name: 'tiny crawler', width: 13, height: 5,
-    awake: ['             ', '  ██████     ', '▄██  ██  █▄ ', '█████████   ', ' ▀ ▀  ▀ ▀   '],
-    sleeping: [' zZ          ', '  ██████     ', '▄██ ██ ██▄  ', '█████████   ', ' ▀ ▀  ▀ ▀   '],
-    attention: [' !!!         ', ' ▄██████▄    ', '███  ██  ██ ', '████!!███   ', ' ▀ ▀  ▀ ▀   '],
+    name: 'reef octopus', width: 18, height: 7,
+    awake: ['    .██████.     ', '  .██████████.   ', '  ███o████o███   ', '   ████vv████    ', '  ████████████   ', '  ~~/~~\\/~~\\~~   ', '    ~~    ~~     '],
+    sleeping: [' zZ               ', '    .██████.     ', '  .██████████.   ', '  ███-████-███   ', '   ██████████    ', '  ~~/~~\\/~~\\~~   ', '    ~~    ~~     '],
+    attention: ['  !!!             ', '    .██████.     ', '  .██████████.   ', '  ███O!!!!O███   ', '  ████████████   ', '  ~~/~~\\/~~\\~~   ', ' ~~  ~~  ~~  ~~  '],
   },
   {
-    name: 'ear buddy', width: 14, height: 5,
-    awake: ['              ', ' ▀█    █▀     ', '  ██████      ', '▄██  ██  ██▄ ', '██████████   '],
-    sleeping: [' zZ           ', ' ▀█    █▀     ', '  ██████      ', '▄██ ██ ██▄   ', '█████████    '],
-    attention: ['  !!!         ', ' ▀█    █▀     ', ' ▄██████▄     ', '███  ██  ███ ', '█████!███    '],
+    name: 'dock crab', width: 18, height: 6,
+    awake: [' \\_         _/    ', '  \\_.█████._/    ', '  /██o██o██\\     ', ' (████v█████)    ', ' /`-███████-`\\   ', '/_/       \\_\\    '],
+    sleeping: [' zZ               ', ' \\_         _/    ', '  \\_.█████._/    ', '  /██-██-██\\     ', ' (██████████)    ', '  `-\\███/-`      '],
+    attention: ['  !!!             ', ' \\_  █████  _/    ', '  \\_(██O O██)_/   ', '  /████!████\\    ', ' /`-███████-`\\   ', '/_/       \\_\\    '],
   },
   {
-    name: 'tail buddy', width: 15, height: 5,
-    awake: ['               ', '  ████████     ', '▄██  ██  ██~~ ', '███████████   ', '  ▀ ▀  ▀ ▀    '],
-    sleeping: [' zZ            ', '  ████████     ', '▄██ ██ ██▄~~  ', '██████████    ', '  ▀ ▀  ▀ ▀    '],
-    attention: ['  !!!          ', ' ▄████████▄    ', '███  ██  ██~~ ', '██████!████   ', '  ▀ ▀  ▀ ▀    '],
+    name: 'river otter', width: 17, height: 6,
+    awake: ['   .██████.      ', '  /██o██o██\\~~   ', ' (████vv████)    ', '  `████████`     ', '   /_/  \\_\\      ', '  ~~~    ~~~     '],
+    sleeping: [' zZ              ', '   .██████.      ', '  /██-██-██\\~~   ', ' (██████████)    ', '  `████████`     ', '   /_/  \\_\\      '],
+    attention: ['  !!!            ', '   .██████.      ', '  /██O!!O██\\~~   ', ' (██████████)    ', '  `████████`     ', '   /_/  \\_\\      '],
   },
   {
-    name: 'roundlet', width: 13, height: 5,
-    awake: ['             ', '  ▄████▄     ', ' ██  ██ ██   ', ' ████████    ', '   ▀  ▀      '],
-    sleeping: [' zZ          ', '  ▄████▄     ', ' ██ ██ ██    ', ' ████████    ', '   ▀  ▀      '],
-    attention: [' !!!         ', '  ▄████▄     ', '███  ██ ██   ', ' ████!███    ', '   ▀  ▀      '],
+    name: 'shell turtle', width: 18, height: 6,
+    awake: ['      _____       ', '  ___/█████\\__    ', ' /██o█████o██\\   ', '(█████vv██████)  ', ' /_/███████\\_\\   ', '  /_/      \\_\\   '],
+    sleeping: [' zZ               ', '      _____       ', '  ___/█████\\__    ', ' /██-█████-██\\   ', '(█████████████)  ', '  /_/      \\_\\   '],
+    attention: ['  !!!             ', '    __/█████\\__   ', ' __/██O!!!O██\\_  ', '(██████████████) ', ' /_/███████\\_\\   ', '  /_/      \\_\\   '],
+  },
+  {
+    name: 'field rabbit', width: 17, height: 6,
+    awake: ['  /|      |\\     ', ' /_|██████|_\\    ', '(██o████o██)     ', ' `███vv███`      ', '  ████████       ', '   /_/ \\_\\       '],
+    sleeping: [' zZ              ', '  /|      |\\     ', ' /_|██████|_\\    ', '(██-████-██)     ', ' `████████`      ', '   /_/ \\_\\       '],
+    attention: ['  !!!            ', ' /||      ||\\    ', '/_||██████||_\\   ', '(██O!!!!O██)     ', ' `████████`      ', '   /_/ \\_\\       '],
   },
 ];
 
@@ -89,36 +95,37 @@ function hash32(input) {
   return h >>> 0;
 }
 
-function applyVariant(line, variant) {
-  if (variant % 4 === 0) return line.replaceAll('█', '▓');
-  if (variant % 4 === 1) return line.replaceAll('~', '≈');
-  if (variant % 4 === 2) return line.replaceAll('█', '▒');
+function applyDetail(line, detail) {
+  if (detail % 5 === 0) return line.replaceAll('█', '▓');
+  if (detail % 5 === 1) return line.replaceAll('█', '▒');
+  if (detail % 5 === 2) return line.replaceAll('~', '≈');
+  if (detail % 5 === 3) return line.replaceAll('`', '\'');
   return line;
 }
 
 function applyMark(line, row, mark) {
   const chars = [...line];
-  if (row === 0 && mark % 4 === 0 && chars.length > 5) chars[4] = '^';
-  if (row === 0 && mark % 4 === 1 && chars.length > 7) chars[6] = '.';
-  if (row === 1 && mark % 4 === 2 && chars.length > 3) chars[2] = '▄';
-  if (row === 2 && mark % 4 === 3 && chars.length > 4) chars[3] = '•';
-  if (row === 4 && mark >= 8 && chars.length > 8) chars[8] = mark % 2 === 0 ? '\'' : ',';
+  if (row === 0 && mark % 4 === 0 && !line.includes('!') && !line.includes('zZ') && chars.length > 5) chars[4] = '^';
+  if (row === 1 && mark % 4 === 1 && chars.length > 7) chars[6] = '.';
+  if (row === 2 && mark % 4 === 2 && chars.length > 5) chars[4] = '*';
+  if (row === 3 && mark % 4 === 3 && chars.length > 8) chars[7] = '•';
+  if (row >= 4 && mark >= 8 && chars.length > 10) chars[10] = mark % 2 === 0 ? '\'' : ',';
   return chars.join('');
 }
 
 function creatureFor(repoPath) {
   const seed = hash32(repoPath);
-  const body = seed % archetypes.length;
+  const speciesIndex = (((seed >>> 5) ^ (seed >>> 16)) >>> 0) % species.length;
   const palette = (seed >>> 3) % 6;
-  const variant = (seed >>> 5) % 8;
-  const mark = (seed >>> 13) % 12;
-  return { body, palette, variant, mark, archetype: archetypes[body] };
+  const detail = seed % 10;
+  const mark = (seed >>> 13) % 16;
+  return { speciesIndex, palette, detail, mark, archetype: species[speciesIndex] };
 }
 
 function spriteFrame(creature, state) {
   const lines = creature.archetype[state];
   return lines
-    .map((line) => applyVariant(line, creature.variant))
+    .map((line) => applyDetail(line, creature.detail))
     .map((line, row) => applyMark(line, row, creature.mark));
 }
 
