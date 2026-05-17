@@ -1,0 +1,22 @@
+{
+  "name": "claude-managerie",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "claude-managerie": "./dist/main.js"
+  },
+  "scripts": {
+    "dev": "npm run build && node dist/main.js",
+    "lab": "npm run build && node dist/dev/creature-lab.js",
+    "start": "node dist/main.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.local
+
+# Local planning / spec scratchpads (not part of the published repo)
+.plans/
+.specs/

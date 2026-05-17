@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 956 534" width="956" height="534" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13">
+<rect width="956" height="534" rx="10" ry="10" fill="#0e0e0e"/>
+<rect x="0" y="0" width="956" height="28" rx="10" ry="10" fill="#1a1a1a"/>
+<rect x="0" y="18" width="956" height="10" fill="#1a1a1a"/>
+<circle cx="14" cy="14" r="5.5" fill="#ff5f57"/>
+<circle cx="32" cy="14" r="5.5" fill="#febc2e"/>
+<circle cx="50" cy="14" r="5.5" fill="#28c840"/>
+<text x="478" y="18" fill="#888" text-anchor="middle" font-size="11">claude-managerie — repo selection</text>
+<rect x="8" y="26" width="940" height="488" fill="#1c1c1c"/>
+<rect x="16.00" y="489.00" width="924.00" height="16" fill="#262626"/>
+<text x="16" y="38" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >  </tspan>
+<tspan x="32.80" fill="#ffffd7" font-weight="bold">claude-managerie terminal garden</tspan>
+<tspan x="301.60" fill="#8a8a8a" >                                  </tspan>
+<tspan x="587.20" fill="#87af87" >connected | 6 repos | q quit</tspan>
+<tspan x="822.40" fill="#8a8a8a" >              </tspan>
+</text>
+<text x="16" y="54" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="70" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="86" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >   </tspan>
+<tspan x="41.20" fill="#444444" >.--.</tspan>
+<tspan x="74.80" fill="#8a8a8a" >                                                                                      </tspan>
+<tspan x="797.20" fill="#444444" >.-.  .-.</tspan>
+<tspan x="864.40" fill="#8a8a8a" >         </tspan>
+</text>
+<text x="16" y="102" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >    </tspan>
+<tspan x="49.60" fill="#444444" >|  |</tspan>
+<tspan x="83.20" fill="#8a8a8a" >     </tspan>
+<tspan x="125.20" fill="#ffffd7" font-weight="bold">repo selection</tspan>
+<tspan x="242.80" fill="#8a8a8a" >                    </tspan>
+<tspan x="410.80" fill="#444444" >.------.</tspan>
+<tspan x="478.00" fill="#8a8a8a" >                                       </tspan>
+<tspan x="805.60" fill="#444444" >| |  | |</tspan>
+<tspan x="872.80" fill="#8a8a8a" >        </tspan>
+</text>
+<text x="16" y="118" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >             choose which repos get creatures in the garden                                                   </tspan>
+</text>
+<text x="16" y="134" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="150" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >               [x] /Users/you/code/agent-terrarium                                                            </tspan>
+</text>
+<text x="16" y="166" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >             </tspan>
+<tspan x="125.20" fill="#ffffd7" font-weight="bold">&gt; [x] /Users/you/code/claude-managerie</tspan>
+<tspan x="444.40" fill="#8a8a8a" >                                                           </tspan>
+</text>
+<text x="16" y="182" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >               [x] /Users/you/code/dotfiles                                                                   </tspan>
+</text>
+<text x="16" y="198" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >               [ ] /Users/you/code/notes                                                                      </tspan>
+</text>
+<text x="16" y="214" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >               [x] /Users/you/code/research-index                                                             </tspan>
+</text>
+<text x="16" y="230" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >               [ ] /Users/you/code/tiny-tools                                                                 </tspan>
+</text>
+<text x="16" y="246" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >               [x] /Users/you/code/work/api                                                                   </tspan>
+</text>
+<text x="16" y="262" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >               [ ] /Users/you/code/work/web                                                                   </tspan>
+</text>
+<text x="16" y="278" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="294" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="310" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="326" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="342" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="358" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="374" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="390" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                               </tspan>
+<tspan x="545.20" fill="#87af87" >::::: damp roots :::::</tspan>
+<tspan x="730.00" fill="#8a8a8a" >                         </tspan>
+</text>
+<text x="16" y="406" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="422" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="438" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                              </tspan>
+<tspan x="536.80" fill="#87af87" >. .  ,   .     .</tspan>
+<tspan x="671.20" fill="#8a8a8a" >                                </tspan>
+</text>
+<text x="16" y="454" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >          </tspan>
+<tspan x="100.00" fill="#444444" >.___..__     .__</tspan>
+<tspan x="234.40" fill="#8a8a8a" >                                                                                    </tspan>
+</text>
+<text x="16" y="470" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="486" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >                                                                                                              </tspan>
+</text>
+<text x="16" y="502" xml:space="preserve">
+<tspan x="16.00" fill="#8a8a8a" >  </tspan>
+<tspan x="32.80" fill="#87af87" >selection: j/k move | space toggle | a all | n none | enter close</tspan>
+<tspan x="578.80" fill="#8a8a8a" >                                           </tspan>
+</text>
+</svg>
