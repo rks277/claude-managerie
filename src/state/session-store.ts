@@ -69,6 +69,7 @@ export class SessionStore {
         return {
           repoPath,
           state: aggregateCreatureState(sessions),
+          statusLabel: creatureStatusLabel(sessions),
           sessions,
         };
       });
@@ -77,10 +78,23 @@ export class SessionStore {
 
 export function aggregateCreatureState(rows: SessionRow[]): CreatureState {
   const liveRows = rows.filter(isLiveSession);
-  if (liveRows.some((row) => row.state === 'awaiting_input' || row.state === 'awaiting_permission')) {
-    return 'attention';
+  // Only awaiting_permission is "urgent" — awaiting_input (Claude finished its
+  // turn, awaiting your reply) is normal and stays awake.
+  if (liveRows.some((row) => row.state === 'awaiting_permission')) return 'attention';
+  if (liveRows.some((row) => row.state === 'running' || row.state === 'awaiting_input')) {
+    return 'awake';
   }
-  if (liveRows.some((row) => row.state === 'running')) return 'awake';
+  return 'sleeping';
+}
+
+export function creatureStatusLabel(rows: SessionRow[]): string {
+  const liveRows = rows.filter(isLiveSession);
+  // Precedence: anything that wants the user's attention beats background work.
+  // If ANY session in this repo is asking the user (permissions or input), surface
+  // that. Background "working" only shows when no session needs you.
+  if (liveRows.some((row) => row.state === 'awaiting_permission')) return 'needs perms';
+  if (liveRows.some((row) => row.state === 'awaiting_input')) return 'awaiting instructions';
+  if (liveRows.some((row) => row.state === 'running')) return 'working, dnd';
   return 'sleeping';
 }
 

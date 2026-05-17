@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aggregateCreatureState } from './session-store.js';
+import { aggregateCreatureState, creatureStatusLabel } from './session-store.js';
 import type { SessionRow } from '../types.js';
 
 const base: SessionRow = {
@@ -37,5 +37,44 @@ describe('aggregateCreatureState', () => {
         { ...base, sessionId: 's2', state: 'awaiting_permission', pid: process.pid },
       ]),
     ).toBe('attention');
+  });
+
+  it('awaiting_input stays awake (not attention) — that is normal end-of-turn', () => {
+    expect(aggregateCreatureState([{ ...base, state: 'awaiting_input', pid: process.pid }])).toBe('awake');
+  });
+});
+
+describe('creatureStatusLabel', () => {
+  it('sleeping when no live sessions', () => {
+    expect(creatureStatusLabel([])).toBe('sleeping');
+    expect(creatureStatusLabel([{ ...base, state: 'ended' }])).toBe('sleeping');
+  });
+
+  it('working, dnd when any session is running', () => {
+    expect(creatureStatusLabel([{ ...base, state: 'running', pid: process.pid }])).toBe('working, dnd');
+  });
+
+  it('awaiting instructions when session is awaiting_input', () => {
+    expect(creatureStatusLabel([{ ...base, state: 'awaiting_input', pid: process.pid }])).toBe(
+      'awaiting instructions',
+    );
+  });
+
+  it('needs perms beats everything', () => {
+    expect(
+      creatureStatusLabel([
+        { ...base, state: 'running', pid: process.pid },
+        { ...base, sessionId: 's2', state: 'awaiting_permission', pid: process.pid },
+      ]),
+    ).toBe('needs perms');
+  });
+
+  it('awaiting instructions beats working, dnd when both are present', () => {
+    expect(
+      creatureStatusLabel([
+        { ...base, state: 'awaiting_input', pid: process.pid },
+        { ...base, sessionId: 's2', state: 'running', pid: process.pid },
+      ]),
+    ).toBe('awaiting instructions');
   });
 });

@@ -37,70 +37,87 @@ stream, and renders a procedural ASCII creature per repo.
 
 ## Install
 
-claude-managerie requires the agent-terrarium daemon to be installed and
-running. Both projects are designed to live as siblings on disk.
+One command. macOS only.
 
-### 1. Prerequisites
+```sh
+git clone https://github.com/rks277/claude-managerie.git
+cd claude-managerie && ./bootstrap.sh
+```
 
-- **Node.js ≥ 20** (the TUI is ESM and targets a modern Node)
-- **pnpm** (only needed for agent-terrarium; install with `npm i -g pnpm` or via Corepack)
-- **Claude Code** ([install instructions](https://docs.claude.com/en/docs/claude-code))
-- **macOS or Linux.** The repo-orch daemon runs over a Unix socket. Windows is not supported in v1.
+`bootstrap.sh` clones [agent-terrarium](https://github.com/rks277/agent-terrarium)
+as a sibling (or uses `AGENT_TERRARIUM_ROOT` if set), builds both repos,
+loads the launchd daemon, registers the Claude Code plugin, installs a
+global `claude-managerie` command on your PATH, and drops you into the
+garden. Re-running the script is safe — every step is idempotent.
 
-### 2. Install and build agent-terrarium (the daemon)
+After bootstrap, day-to-day use is just:
+
+```sh
+claude-managerie         # open the garden from any terminal
+claude-managerie update  # git pull + rebuild both repos, restart daemon
+claude-managerie doctor  # check daemon health
+claude-managerie setup   # re-run setup (idempotent)
+```
+
+### What gets written to your machine
+
+- `~/.repo-orch/` — daemon state (DB, socket, logs).
+- `~/Library/LaunchAgents/co.repo-orch.daemon.plist` — launchd job.
+- `~/.claude/plugins/repo-orch/` — Claude Code hook plugin (source tree).
+- `~/.claude-managerie/config.json` — TUI preferences (selected repos, creature identities).
+
+Plugin registration is performed by invoking the official `claude plugin
+marketplace add` and `claude plugin install` subcommands — claude-managerie
+does **not** touch `~/.claude/settings.json` or the other plugin registry
+files directly. Claude Code writes whatever it writes, exactly as it would
+if you ran the slash commands manually.
+
+<details>
+<summary><strong>Manual install (advanced)</strong></summary>
+
+If `bootstrap.sh` doesn't suit you, the original four-step flow still
+works:
+
+#### Prerequisites
+
+- Node.js ≥ 20
+- pnpm (`npm i -g pnpm` or Corepack)
+- Claude Code ([install](https://docs.claude.com/en/docs/claude-code))
+- macOS (Linux not yet supported)
+
+#### Install and build agent-terrarium
 
 ```sh
 git clone https://github.com/rks277/agent-terrarium.git
 cd agent-terrarium
 pnpm install
 pnpm -r build
-
-# Drop the plugin tree, register the launchd plist, start the daemon:
 node packages/cli/dist/index.js install
-
-# Sanity-check it:
 node packages/cli/dist/index.js doctor
 ```
 
-`install` is idempotent — re-running it just refreshes the plugin tree
-and restarts the daemon. `doctor` prints daemon status, the socket path,
-and the event count for the last 24h.
-
-### 3. Install and run claude-managerie
-
-Clone it next to `agent-terrarium` (they're expected to be siblings):
+#### Install claude-managerie
 
 ```sh
 cd ..
 git clone https://github.com/rks277/claude-managerie.git
 cd claude-managerie
-
 npm install
 npm run dev
 ```
 
-`npm run dev` builds the TypeScript bundle and starts the TUI. You should
-see the garden appear within a second.
+If agent-terrarium lives elsewhere, set `AGENT_TERRARIUM_ROOT=/absolute/path`.
 
-If agent-terrarium lives somewhere else, point at it with the
-`AGENT_TERRARIUM_ROOT` environment variable:
+#### Register the Claude Code plugin
 
-```sh
-AGENT_TERRARIUM_ROOT=/absolute/path/to/agent-terrarium npm run dev
-```
-
-### 4. Register the Claude Code plugin (one time)
-
-agent-terrarium ships a Claude Code plugin that emits the session events
-the daemon ingests. Inside any Claude Code session, paste:
+Inside any Claude Code session, paste:
 
 ```
 /plugin marketplace add ~/.claude/plugins/repo-orch
 /plugin install repo-orch@repo-orch
 ```
 
-You only need to do this once per machine. After that, every Claude Code
-session in any repo will show up automatically in the garden.
+</details>
 
 ---
 

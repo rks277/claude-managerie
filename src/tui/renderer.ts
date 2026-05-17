@@ -11,6 +11,7 @@ import { ansi, paletteColor } from './ansi.js';
 type RenderCreature = {
   config: CreatureConfig;
   state: CreatureState;
+  statusLabel: string;
   x: number;
   y: number;
   vx: number;
@@ -104,6 +105,7 @@ export class TerminalGarden {
       const existing = this.creatures.get(repo.repoPath);
       if (existing) {
         existing.state = repo.state;
+        existing.statusLabel = repo.statusLabel;
         return;
       }
 
@@ -112,6 +114,7 @@ export class TerminalGarden {
       this.creatures.set(repo.repoPath, {
         config,
         state: repo.state,
+        statusLabel: repo.statusLabel,
         ...this.initialPosition(index, config, width, height),
         vx: 0.018 + (config.gait + 1) * 0.006,
         vy: lane === 1 ? -0.012 : 0.01,
@@ -297,7 +300,7 @@ function shortRepo(repoPath: string): string {
 }
 
 function labelText(creature: RenderCreature): string {
-  return `${shortRepo(creature.config.repoPath)} ${creature.state}`;
+  return `${shortRepo(creature.config.repoPath)} ${creature.statusLabel}`;
 }
 
 function creatureBounds(creature: RenderCreature, width: number): Rect {

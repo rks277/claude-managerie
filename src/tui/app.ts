@@ -1,7 +1,8 @@
 import { ansi } from './ansi.js';
 import { TerminalGarden, type RenderModel } from './renderer.js';
 import { createCreatureIdentity, type CreatureIdentity } from '../creatures/generator.js';
-import { getSetupStatus, installRepoOrch } from '../repo-orch/install.js';
+import { getSetupStatus } from '../repo-orch/install.js';
+import { runSetup } from '../cli/setup.js';
 import { resolveRepoOrchPaths } from '../repo-orch/paths.js';
 import { connectRepoOrchSocket, readStatus } from '../repo-orch/socket-client.js';
 import { readConfig, writeConfig, type AppConfig } from '../state/config-store.js';
@@ -70,7 +71,7 @@ export class ManagerieApp {
         this.message = 'refreshing daemon state...';
         void this.refreshSetup().then(() => this.syncSessions());
       } else if (key === 'i') {
-        void this.install();
+        void this.runSetup();
       } else if (key === 's') {
         this.config.setupSkipped = true;
         void writeConfig(this.config);
@@ -84,7 +85,7 @@ export class ManagerieApp {
     this.connected = this.setup.daemonResponding;
     this.message = this.connected
       ? 'connected | o select repos | q quit | r refresh | p pause'
-      : 'offline | i install | o select repos | r refresh | s skip setup | q quit';
+      : 'offline | i setup | o select repos | r refresh | s skip setup | q quit';
   }
 
   private async syncSessions(): Promise<void> {
@@ -125,14 +126,11 @@ export class ManagerieApp {
     }
   }
 
-  private async install(): Promise<void> {
-    this.message = 'running repo-orch install...';
+  private async runSetup(): Promise<void> {
+    this.message = 'running setup...';
     this.render();
-    const result = await installRepoOrch(false);
-    this.message =
-      result.code === 0
-        ? 'repo-orch install finished; refreshing...'
-        : `install failed: ${result.stderr || result.stdout || 'unknown error'}`.replace(/\s+/g, ' ');
+    const result = await runSetup({ quiet: true });
+    this.message = result.ok ? 'setup complete; refreshing...' : `setup failed: ${result.message}`.replace(/\s+/g, ' ');
     await this.refreshSetup();
     await this.syncSessions();
   }

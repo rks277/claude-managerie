@@ -1,5 +1,6 @@
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export type RepoOrchPaths = {
   home: string;
@@ -13,7 +14,7 @@ export type RepoOrchPaths = {
 export function resolveRepoOrchPaths(): RepoOrchPaths {
   const home = os.homedir();
   const agentTerrariumRoot =
-    process.env.AGENT_TERRARIUM_ROOT ?? path.resolve(process.cwd(), '..', 'agent-terrarium');
+    process.env.AGENT_TERRARIUM_ROOT ?? path.resolve(packageRoot(), '..', 'agent-terrarium');
 
   return {
     home,
@@ -23,4 +24,11 @@ export function resolveRepoOrchPaths(): RepoOrchPaths {
     agentTerrariumRoot,
     cliPath: path.join(agentTerrariumRoot, 'packages', 'cli', 'dist', 'index.js'),
   };
+}
+
+export function packageRoot(): string {
+  // This file lives at <pkg>/dist/repo-orch/paths.js after build (or <pkg>/src/repo-orch/paths.ts in dev).
+  // Either way, two levels up is the package root.
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  return path.resolve(here, '..', '..');
 }
