@@ -34,6 +34,21 @@ const palette = [
   ansi.fg.blue,
 ];
 
+// Accent color paired with each body color. Used for eyes/mouth so the face
+// pops against the body fill.
+const accents = [
+  ansi.fg.rust,
+  ansi.fg.amber,
+  ansi.fg.pink,
+  ansi.fg.cyan,
+  ansi.fg.amber,
+  ansi.fg.pink,
+];
+
 export function paletteColor(index: number): string {
   return palette[index % palette.length];
+}
+
+export function paletteAccent(index: number): string {
+  return accents[index % accents.length];
 }

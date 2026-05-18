@@ -10,8 +10,9 @@ import { runSetup } from '../cli/setup.js';
 import { resolveRepoOrchPaths } from '../repo-orch/paths.js';
 import { connectRepoOrchSocket, readStatus } from '../repo-orch/socket-client.js';
 import { readConfig, writeConfig, type AppConfig } from '../state/config-store.js';
-import { SessionStore } from '../state/session-store.js';
+import { isLiveSession, SessionStore } from '../state/session-store.js';
 import type { SetupStatus } from '../types.js';
+import { activateTerminalForSession } from './activate-terminal.js';
 
 export class ManagerieApp {
   private readonly store = new SessionStore();
@@ -22,6 +23,7 @@ export class ManagerieApp {
   private paused = false;
   private selectionMode = false;
   private selectionCursor = 0;
+  private selectedRepoPath: string | null = null;
   private message = 'starting...';
   private renderTimer: NodeJS.Timeout | null = null;
   private syncTimer: NodeJS.Timeout | null = null;
@@ -58,6 +60,20 @@ export class ManagerieApp {
       } else if (key === 'p') {
         this.paused = !this.paused;
         this.message = this.paused ? 'paused' : 'animation resumed';
+      } else if (data[0] === 9 && !this.selectionMode) {
+        this.cycleCreatureSelection(1);
+      } else if (
+        data.length === 3 &&
+        data[0] === 27 &&
+        data[1] === 91 &&
+        data[2] === 90 &&
+        !this.selectionMode
+      ) {
+        this.cycleCreatureSelection(-1);
+      } else if (data.length === 1 && data[0] === 27 && !this.selectionMode) {
+        this.clearCreatureSelection();
+      } else if (key === '\r' && this.selectedRepoPath !== null && !this.selectionMode) {
+        void this.activateSelectedCreature();
       } else if (key === 'o' || key === '\r') {
         this.selectionMode = !this.selectionMode;
         this.message = this.selectionMode ? 'select repos for the garden' : 'selection closed';
@@ -88,8 +104,8 @@ export class ManagerieApp {
     this.setup = await getSetupStatus();
     this.connected = this.setup.daemonResponding;
     this.message = this.connected
-      ? 'connected | o select repos | q quit | r refresh | p pause'
-      : 'offline | i setup | o select repos | r refresh | s skip setup | q quit';
+      ? 'connected | tab cycle | enter focus | o repos | q quit'
+      : 'offline | i setup | o repos | r refresh | s skip | q quit';
   }
 
   private async syncSessions(): Promise<void> {
@@ -100,7 +116,7 @@ export class ManagerieApp {
       await this.ensureCreatureIdentities([...new Set(rows.map((row) => row.repoPath))]);
       this.connected = true;
       this.message = rows.length
-        ? `synced ${rows.length} sessions | o select repos | q quit | r refresh | p pause`
+        ? `synced ${rows.length} sessions | tab cycle | enter focus | o repos | q quit`
         : 'daemon online; no sessions yet | open Claude Code in a repo';
     } catch (err) {
       this.connected = false;
@@ -152,6 +168,7 @@ export class ManagerieApp {
       selectedRepoPaths: selected,
       selectionMode: this.selectionMode,
       selectionCursor: this.selectionCursor,
+      selectedRepoPath: this.selectedRepoPath,
       message: this.message,
       paused: this.paused,
     };
@@ -190,6 +207,55 @@ export class ManagerieApp {
     this.config.selectedRepoPaths = [];
     await writeConfig(this.config);
     this.message = 'hidden all repos';
+  }
+
+  private cycleCreatureSelection(delta: number): void {
+    const selected =
+      this.config.selectedRepoPaths === null ? null : new Set(this.config.selectedRepoPaths);
+    const creatures = this.store.creatures(selected);
+    if (creatures.length === 0) {
+      this.selectedRepoPath = null;
+      return;
+    }
+    const currentIdx = this.selectedRepoPath
+      ? creatures.findIndex((c) => c.repoPath === this.selectedRepoPath)
+      : -1;
+    const nextIdx =
+      currentIdx < 0
+        ? delta > 0
+          ? 0
+          : creatures.length - 1
+        : (currentIdx + delta + creatures.length) % creatures.length;
+    this.selectedRepoPath = creatures[nextIdx].repoPath;
+    this.message = `selected ${shortRepo(this.selectedRepoPath)} | enter to focus | esc to clear`;
+  }
+
+  private clearCreatureSelection(): void {
+    if (this.selectedRepoPath === null) return;
+    this.selectedRepoPath = null;
+    this.message = 'selection cleared';
+  }
+
+  private async activateSelectedCreature(): Promise<void> {
+    const repoPath = this.selectedRepoPath;
+    if (!repoPath) return;
+    const creature = this.store.creatures(null).find((c) => c.repoPath === repoPath);
+    if (!creature) {
+      this.message = `no creature for ${shortRepo(repoPath)}`;
+      return;
+    }
+    const liveSession = creature.sessions.find((s) => isLiveSession(s));
+    if (!liveSession) {
+      this.message = `no live session in ${shortRepo(repoPath)}`;
+      return;
+    }
+    this.message = `focusing ${shortRepo(repoPath)}...`;
+    const result = await activateTerminalForSession({
+      pid: liveSession.pid,
+      sessionId: liveSession.sessionId,
+      repoPath,
+    });
+    this.message = result.message;
   }
 
   private async ensureCreatureIdentities(repoPaths: string[]): Promise<void> {

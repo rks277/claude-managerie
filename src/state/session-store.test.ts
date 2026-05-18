@@ -60,13 +60,13 @@ describe('creatureStatusLabel', () => {
     );
   });
 
-  it('needs perms beats everything', () => {
+  it('needs attention beats everything', () => {
     expect(
       creatureStatusLabel([
         { ...base, state: 'running', pid: process.pid },
         { ...base, sessionId: 's2', state: 'awaiting_permission', pid: process.pid },
       ]),
-    ).toBe('needs perms');
+    ).toBe('needs attention');
   });
 
   it('awaiting instructions beats working, dnd when both are present', () => {

@@ -6,7 +6,7 @@ import {
   type CreatureIdentity,
 } from '../creatures/generator.js';
 import type { CreatureState, RepoCreature, SetupStatus } from '../types.js';
-import { ansi, paletteColor } from './ansi.js';
+import { ansi, paletteAccent, paletteColor } from './ansi.js';
 
 type RenderCreature = {
   config: CreatureConfig;
@@ -38,6 +38,7 @@ export type RenderModel = {
   selectedRepoPaths: Set<string> | null;
   selectionMode: boolean;
   selectionCursor: number;
+  selectedRepoPath: string | null;
   message: string;
   paused: boolean;
 };
@@ -79,12 +80,16 @@ export class TerminalGarden {
     for (const c of this.creatures.values()) {
       const sprite = creatureFrame(c.config, c.state, this.frame);
       const pulse = c.state === 'attention' && this.frame % 4 < 2;
-      const color = pulse ? ansi.fg.bone + ansi.bold : paletteColor(c.config.palette);
+      const bodyColor = pulse ? ansi.fg.bone + ansi.bold : paletteColor(c.config.palette);
+      const accentColor = pulse ? ansi.fg.amber + ansi.bold : paletteAccent(c.config.palette);
       const bob = c.state === 'attention' ? Math.sin(this.frame / 8 + c.x) * 0.25 : 0;
       const x = Math.round(c.x);
       const y = Math.round(c.y + bob);
-      sprite.forEach((line, row) => put(grid, x, y + row, line, color));
+      sprite.forEach((line, row) => putSprite(grid, x, y + row, line, bodyColor, accentColor));
       put(grid, x + 2, y + sprite.length, labelText(c), ansi.fg.gray);
+      if (c.config.repoPath === model.selectedRepoPath) {
+        drawSelectionBox(grid, c, width);
+      }
     }
 
     put(grid, 0, height - 1, ' '.repeat(width), ansi.bg.moss);
@@ -305,18 +310,40 @@ function setupLines(setup: SetupStatus | null): string[] {
 }
 
 function drawDecor(grid: string[][], width: number, height: number): void {
-  const decor = [
-    { x: 3, y: 3, text: '.--.', color: ansi.fg.dark },
-    { x: 4, y: 4, text: '|  |', color: ansi.fg.dark },
-    { x: width - 17, y: 3, text: '.-.  .-.', color: ansi.fg.dark },
-    { x: width - 16, y: 4, text: '| |  | |', color: ansi.fg.dark },
-    { x: Math.floor(width / 2) - 8, y: 4, text: '.------.', color: ansi.fg.dark },
-    { x: Math.floor(width / 2) - 8, y: 5, text: '|      |', color: ansi.fg.dark },
-    { x: width - 48, y: height - 5, text: '. .  ,   .     .', color: ansi.fg.moss },
-    { x: 10, y: height - 4, text: '.___..__     .__', color: ansi.fg.dark },
-    { x: Math.floor(width / 2) + 20, y: height - 8, text: '::::: damp roots :::::', color: ansi.fg.moss },
-  ];
-  for (const item of decor) put(grid, item.x, item.y, item.text, item.color + ansi.dim);
+  drawReeds(grid, width, height);
+  put(
+    grid,
+    Math.floor(width / 2) + 20,
+    height - 8,
+    '::::: damp roots :::::',
+    ansi.fg.moss + ansi.dim,
+  );
+}
+
+// Deterministic reed clusters scattered across the canvas. Reeds are drawn
+// before creatures so creature sprites naturally appear in front.
+function drawReeds(grid: string[][], width: number, height: number): void {
+  const reedColor = ansi.fg.moss + ansi.dim;
+  const innerHeight = height - 3; // leave room for header/status bar
+  // Anchors are positions in [0, 1) across the width; stable so reeds don't jitter.
+  const anchors = [0.04, 0.11, 0.19, 0.27, 0.35, 0.44, 0.52, 0.61, 0.69, 0.77, 0.85, 0.93];
+  for (let i = 0; i < anchors.length; i += 1) {
+    const x = Math.max(1, Math.min(width - 3, Math.floor(anchors[i] * width)));
+    const clusterHeight = 3 + ((i * 7) % 3); // 3-5 reeds tall
+    // Alternate clusters between upper and lower bands for variety.
+    const topBand = i % 2 === 0;
+    const minY = 2;
+    const maxY = innerHeight - clusterHeight;
+    const bandStart = topBand ? minY : Math.floor(innerHeight * 0.55);
+    const bandEnd = topBand ? Math.floor(innerHeight * 0.45) : maxY;
+    const range = Math.max(1, bandEnd - bandStart);
+    const startY = bandStart + ((i * 13) % range);
+    for (let r = 0; r < clusterHeight; r += 1) {
+      const y = startY + r;
+      const glyph = (i + r) % 4 === 0 ? '()' : ')(';
+      put(grid, x, y, glyph, reedColor);
+    }
+  }
 }
 
 function makeGrid(width: number, height: number): string[][] {
@@ -331,9 +358,53 @@ function put(grid: string[][], x: number, y: number, text: string, color = ansi.
   }
 }
 
+// Eyes, mouth, sparkles, sleep z's. These chars get the accent color so the
+// face stands out from the body fill.
+const ACCENT_CHARS = new Set(['o', 'O', 'v', 'V', '!', 'Z', 'z', '*', '•']);
+
+function putSprite(
+  grid: string[][],
+  x: number,
+  y: number,
+  text: string,
+  bodyColor: string,
+  accentColor: string,
+): void {
+  if (y < 0 || y >= grid.length) return;
+  for (let i = 0; i < text.length; i += 1) {
+    const xx = x + i;
+    if (xx < 0 || xx >= grid[y].length) continue;
+    const ch = text[i];
+    const color = ACCENT_CHARS.has(ch) ? accentColor : bodyColor;
+    grid[y][xx] = `${ansi.bg.dark}${color}${ch}${ansi.reset}`;
+  }
+}
+
 function shortRepo(repoPath: string): string {
   const base = path.basename(repoPath);
   return base ? `~/${base}` : repoPath;
+}
+
+function drawSelectionBox(grid: string[][], creature: RenderCreature, width: number): void {
+  const bounds = creatureBounds(creature, width);
+  const left = Math.round(bounds.left);
+  const right = Math.round(bounds.right) - 1;
+  const top = Math.round(bounds.top);
+  const bottom = Math.round(bounds.bottom) - 1;
+  if (right <= left || bottom <= top) return;
+  const color = ansi.fg.amber + ansi.bold;
+  put(grid, left, top, '┌', color);
+  put(grid, right, top, '┐', color);
+  put(grid, left, bottom, '└', color);
+  put(grid, right, bottom, '┘', color);
+  for (let x = left + 1; x < right; x += 1) {
+    put(grid, x, top, '─', color);
+    put(grid, x, bottom, '─', color);
+  }
+  for (let y = top + 1; y < bottom; y += 1) {
+    put(grid, left, y, '│', color);
+    put(grid, right, y, '│', color);
+  }
 }
 
 function labelText(creature: RenderCreature): string {

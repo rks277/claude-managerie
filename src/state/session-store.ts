@@ -93,7 +93,7 @@ export function creatureStatusLabel(rows: SessionRow[]): string {
   // Precedence: anything that wants the user's attention beats background work.
   // If ANY session in this repo is asking the user (permissions or input), surface
   // that. Background "working" only shows when no session needs you.
-  if (liveRows.some((row) => row.state === 'awaiting_permission')) return 'needs perms';
+  if (liveRows.some((row) => row.state === 'awaiting_permission')) return 'needs attention';
   if (liveRows.some((row) => row.state === 'awaiting_input')) return 'awaiting instructions';
   if (liveRows.some((row) => row.state === 'running')) return 'working, dnd';
   return 'sleeping';
